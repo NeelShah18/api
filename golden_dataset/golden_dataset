@@ -1,0 +1,87 @@
+def viztag_training_dataset_from_filename(filename,category, verbose=False):
+    print "Loading ", filename.split('/')[-1]
+    cat2tag = { 'ORG': 'organization', 'PERSON': 'person', 'LOC': 'location'}
+    category=cat2tag[category]
+    x, y = [], []
+    nb_lines = 0
+    # input_file = file(filename, "r")  # before utf-8 migration
+    input_file = codecs.open(filename, encoding='utf-8')
+    ne_types= set()
+    for line in input_file:
+        assert type(line)==unicode, "viztag_training_dataset_from_filename"+line
+
+        nb_lines += 1
+        json_unicode = line.decode("utf-8")
+        nes = json.loads(json_unicode)
+        if 'saved' in nes.keys():
+            if nes['saved']:
+                ne_types.update(nes['named_entities'].keys())
+                x.append(nes['tokens'])
+                y.append( list_of_tagged_indexes_to_bioes(lis_tag_inds=[ne['tok_inds'] for ne in nes['named_entities'][category]], length=len(nes['tokens'])))
+    print "Viztag files: Done", len(y), " sentences loaded out of ", nb_lines , " in entire dataset"
+    if verbose:
+        for i in  ne_types:
+            print i
+    return x,y
+# viztag_filename = './NER_tagging_english_batch00_2017_04_04_one_hour_batches/NER_tagging_batch00_2017_04_04_one_hour_batches_1_stephane(Fri_Apr_14_2017_09-31-19_GMT-0700_(PDT)).txt'
+# l=viztag_training_dataset_from_filename(filename=viztag_filename, category = 'PERSON')
+
+
+################################################################################################################################################################################
+import requests
+import json
+######################
+url_dev = 'http://ec2-54-215-233-30.us-west-1.compute.amazonaws.com/ner'
+
+url = url_dev
+
+#####################
+
+sentence = u"Stéphane and सादीक have 5 € and ₹ 70".encode('utf-8')
+print sentence
+
+######################
+
+print "############### gplue output "
+r = requests.post(url=url+'/gplue', data=sentence)
+r_json = json.loads(r.text.encode('utf-8'), encoding='utf-8')
+for k in r_json:
+    print k,"        -", r_json[k]
+
+
+print "\n################ json default output"
+r = requests.post(url=url, data=sentence)
+
+r_json = json.loads(r.text.encode('utf-8'), encoding='utf-8')
+# print  r_json #  printing of dictionnary does not handle utf-8
+print  json.dumps(r_json, ensure_ascii=False).encode('utf-8')
+
+
+print "\n############### verbose output"
+r = requests.post(url=url+'/verbose', data=sentence)
+print r.text
+
+
+print "\n############### check knn entity extractor code"
+
+entities = {}
+for k in r_json['named_entities'].keys():
+    if not k.startswith('sp_'):
+        try:
+            for i in range(len(r_json['named_entities'][k])):
+                for ind in r_json['named_entities'][k][i]['tok_inds']:
+                    entities[ind] = k
+        except Exception:
+            continue
+print "entities", entities
+
+####################################################################################################################################
+#todo
+def false_positives(  named_entity_type='PERSON', 
+                      viztag_filenames=['./NER_tagging_english_batch00_2017_04_04_one_hour_batches/NER_tagging_batch00_2017_04_04_one_hour_batches_1_stephane(Fri_Apr_14_2017_09-31-19_GMT-0700_(PDT)).txt'],
+                      url_ner_to_test='http://ec2-54-215-233-30.us-west-1.compute.amazonaws.com/ner )
+  pass
+def false_negatives(  named_entity_type='PERSON', 
+                      viztag_filenames=['./NER_tagging_english_batch00_2017_04_04_one_hour_batches/NER_tagging_batch00_2017_04_04_one_hour_batches_1_stephane(Fri_Apr_14_2017_09-31-19_GMT-0700_(PDT)).txt'], 
+                      url_ner_to_test='http://ec2-54-215-233-30.us-west-1.compute.amazonaws.com/ner )
+  pass
