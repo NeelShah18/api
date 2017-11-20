@@ -1,0 +1,1 @@
+from UNICODE_DATA import SLANG
