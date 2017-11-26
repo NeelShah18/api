@@ -3,51 +3,52 @@ import math
 import random
 from gurobipy import *
 
-def subtourelim(model, where):
-    if where == GRB.Callback.MIPSOL:
-        selected = []
+#deciding final optimal path among differetn choices
+def final_path(ver):
+    t = [False]*n
+    lc = []
+    el = []
+    final = [[] for i in range(n)]
+    for x,y in ver:
+        final[x].append(y)
+    while True:
+        cur = t.index(False)
+        cycle = [cur]
+        while True:
+            t[cur] = True
+            neighbors = [x for x in final[cur] if not t[x]]
+            if len(neighbors) == 0:
+                break
+            cur = neighbors[0]
+            cycle.append(cur)
+        lc.append(cycle)
+        el.append(len(cycle))
+        if sum(el) == n:
+            break
+    return lc[el.index(min(el))]
+
+#finding optimal path
+def opt_sub(m, diss):
+    if diss == GRB.Callback.MIPSOL:
+        sel = []
         
         for i in range(n):
-            sol = model.cbGetSolution([model._vars[i,j] for j in range(n)])
-            selected += [(i,j) for j in range(n) if sol[j] > 0.5]
+            sol = m.cbGetSolution([m._vars[i,j] for j in range(n)])
+            sel += [(i,j) for j in range(n) if sol[j] > 0.5]
         
-        tour = subtour(selected)
+        tour = final_path(sel)
         if len(tour) < n:
             expr = 0
             for i in range(len(tour)):
                 for j in range(i+1, len(tour)):
-                    expr += model._vars[tour[i], tour[j]]
-            model.cbLazy(expr <= len(tour)-1)
+                    expr += m._vars[tour[i], tour[j]]
+            m.cbLazy(expr <= len(tour)-1)
 
-
-def distance(points, i, j):
-    dx = points[i][0] - points[j][0]
-    dy = points[i][1] - points[j][1]
-    return math.sqrt(dx*dx + dy*dy)
-
-
-def subtour(edges):
-    visited = [False]*n
-    cycles = []
-    lengths = []
-    selected = [[] for i in range(n)]
-    for x,y in edges:
-        selected[x].append(y)
-    while True:
-        current = visited.index(False)
-        thiscycle = [current]
-        while True:
-            visited[current] = True
-            neighbors = [x for x in selected[current] if not visited[x]]
-            if len(neighbors) == 0:
-                break
-            current = neighbors[0]
-            thiscycle.append(current)
-        cycles.append(thiscycle)
-        lengths.append(len(thiscycle))
-        if sum(lengths) == n:
-            break
-    return cycles[lengths.index(min(lengths))]
+# Calculating optimal distance
+def final_dis(po, i, j):
+    x = po[i][0] - po[j][0]
+    y = po[i][1] - po[j][1]
+    return math.sqrt(x*x + y*y)
 
 if len(sys.argv) < 2:
     lol = 1
@@ -59,13 +60,13 @@ points = []
 for i in range(n):
     points.append((random.randint(0,100),random.randint(0,100)))
 
+#Starting of gurobi module
 m = Model()
-
 
 vars = {}
 for i in range(n):
     for j in range(i+1):
-        vars[i,j] = m.addVar(obj=distance(points, i, j), vtype=GRB.BINARY,
+        vars[i,j] = m.addVar(obj=final_dis(points, i, j), vtype=GRB.BINARY,
                              name='e'+str(i)+'_'+str(j))
         vars[j,i] = vars[i,j]
 m.update()
@@ -79,12 +80,12 @@ m.update()
 
 m._vars = vars
 m.params.LazyConstraints = 1
-m.optimize(subtourelim)
+m.optimize(opt_sub)
 
-solution = m.getAttr('x', vars)
-selected = [(i,j) for i in range(n) for j in range(n) if solution[i,j] > 0.5]
-assert len(subtour(selected)) == n
+final_sol = m.getAttr('x', vars)
+ans = [(i,j) for i in range(n) for j in range(n) if final_sol[i,j] > 0.5]
+
+assert len(final_path(ans)) == n
 
 print('')
-print('Optimal tour: %s' % str(subtour(selected)))
-print('')
+print('Optimal tour: %s' % str(final_path(ans)))
