@@ -17,3 +17,5 @@ Step-4: It also have other details, which optimize method it is using, time take
         Example:Optimize a model with 10 rows, 55 columns and 100 nonzeros
         Optimize a model with 10 rows, 55 columns and 100 nonzeros
         etc...
+
+#Screenshot is attached in folder how to run it.
