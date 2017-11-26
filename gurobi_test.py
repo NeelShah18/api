@@ -3,20 +3,16 @@ import math
 import random
 from gurobipy import *
 
-
-# Callback - use lazy constraints to eliminate sub-tours
-
 def subtourelim(model, where):
     if where == GRB.Callback.MIPSOL:
         selected = []
-        # make a list of edges selected in the solution
+        
         for i in range(n):
             sol = model.cbGetSolution([model._vars[i,j] for j in range(n)])
             selected += [(i,j) for j in range(n) if sol[j] > 0.5]
-        # find the shortest cycle in the selected edge list
+        
         tour = subtour(selected)
         if len(tour) < n:
-            # add a subtour elimination constraint
             expr = 0
             for i in range(len(tour)):
                 for j in range(i+1, len(tour)):
@@ -24,15 +20,11 @@ def subtourelim(model, where):
             model.cbLazy(expr <= len(tour)-1)
 
 
-# Euclidean distance between two points
-
 def distance(points, i, j):
     dx = points[i][0] - points[j][0]
     dy = points[i][1] - points[j][1]
     return math.sqrt(dx*dx + dy*dy)
 
-
-# Given a list of edges, finds the shortest subtour
 
 def subtour(edges):
     visited = [False]*n
@@ -57,15 +49,10 @@ def subtour(edges):
             break
     return cycles[lengths.index(min(lengths))]
 
-
-# Parse argument
-
 if len(sys.argv) < 2:
-    print('Usage: tsp.py npoints')
+    lol = 1
     exit(1)
 n = int(sys.argv[1])
-
-# Create n random points
 
 random.seed(1)
 points = []
@@ -74,8 +61,6 @@ for i in range(n):
 
 m = Model()
 
-
-# Create variables
 
 vars = {}
 for i in range(n):
@@ -86,15 +71,11 @@ for i in range(n):
 m.update()
 
 
-# Add degree-2 constraint, and forbid loops
-
 for i in range(n):
     m.addConstr(quicksum(vars[i,j] for j in range(n)) == 2)
     vars[i,i].ub = 0
 m.update()
 
-
-# Optimize model
 
 m._vars = vars
 m.params.LazyConstraints = 1
@@ -106,5 +87,4 @@ assert len(subtour(selected)) == n
 
 print('')
 print('Optimal tour: %s' % str(subtour(selected)))
-print('Optimal cost: %g' % m.objVal)
 print('')
