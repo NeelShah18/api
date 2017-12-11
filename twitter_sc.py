@@ -30,7 +30,7 @@ class StdOutListener(StreamListener):
     """
     def on_data(self, data):
         get_data = json.loads(data)
-        lg.debug("get a tweet"+str(self.counter))
+        lg.debug("get a tweet")
         writemongo(get_data)
         return True
 
@@ -40,7 +40,7 @@ class StdOutListener(StreamListener):
 
 def writemongo(pass_data):
     try:
-        db.set1.insert(pass_data)
+        db.set2.insert(pass_data)
         lg.info("Tweet inserted to database")
     except:
         lg.info("Error while MonogDB insertion")
