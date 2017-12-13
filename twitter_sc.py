@@ -40,7 +40,7 @@ class StdOutListener(StreamListener):
 
 def writemongo(pass_data):
     try:
-        db.set4.insert(pass_data)
+        db.set4.insertad(pass_data)
         lg.info("Tweet inserted to database")
     except:
         lg.info("Error while MonogDB insertion")

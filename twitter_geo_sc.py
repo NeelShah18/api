@@ -16,13 +16,13 @@ db = client.twitter
 
 # Go to http://apps.twitter.com and create an app.
 # The consumer key and secret will be generated for you after
-consumer_key="sRfCM1D5RUetDCp3abBzQcS4P"
-consumer_secret="z5uACcOznq0sV3rZmowzOe7oibwbRZijM5jWjBY0FQGBk2VhXA"
+consumer_key="3MdQmqPrl83wjW25FluO37n7M"
+consumer_secret=" KVmroiqHLBstq0AXEaR8Chwn3RYQ6swsNwDx9WYEws0PPbTy4Y"
 
 # After the step above, you will be redirected to your app's page.
 # Create an access token under the the "Your access token" section
-access_token="765052127873945600-NcssTtt0FkyUcAICXdJQ79quypsONsD"
-access_token_secret="ZkgPgWUfv7x0Zx6jrF4llZUjHqzGXd4ZABeXjDsiulMOK"
+access_token="938140566130515974-3YXKcivJ8Vnwr0LKAUmVtYFDK2tpufS"
+access_token_secret="1EZFJZkYxcTIQGMLVC3m1Ruft9FGF5TsTpqxHkpSoKDvh"
 
 class StdOutListener(StreamListener):
     """ A listener handles tweets that are received from the stream.
